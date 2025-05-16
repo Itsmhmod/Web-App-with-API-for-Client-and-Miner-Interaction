@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cryptocurrency Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/elliptic@6.5.4/dist/elliptic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uuid@9.0.0/dist/umd/uuid.min.js"></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header -->
+      <header class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+          Cryptocurrency Simulator
+        </h1>
+        <div class="flex items-center space-x-4">
+          <div class="flex-1">
+            <h2 class="text-xl font-semibold text-gray-700">Your Balance</h2>
+            <p class="text-2xl font-bold text-green-600" id="balance">0</p>
+          </div>
+          <div class="flex space-x-2">
+            <button
+              onclick="getBalance()"
+              class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Refresh Balance
+            </button>
+            <button
+              onclick="syncBlockchain()"
+              class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+            >
+              Sync Blockchain
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Left Column -->
+        <div class="space-y-8">
+          <!-- Config Section -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              Configuration
+            </h2>
+            <div class="space-y-4">
+              <div class="flex items-center space-x-4">
+                <input
+                  type="file"
+                  id="configFile"
+                  accept=".json"
+                  class="hidden"
+                />
+                <button
+                  onclick="document.getElementById('configFile').click()"
+                  class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                >
+                  Choose Config File
+                </button>
+                <button
+                  onclick="uploadConfig()"
+                  class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                >
+                  Upload Config
+                </button>
+                <button
+                  onclick="createSampleConfig()"
+                  class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Generate Sample Config
+                </button>
+              </div>
+              <p id="configStatus" class="text-sm text-gray-600"></p>
+            </div>
+          </div>
+
+          <!-- Transaction Section -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              Send Transaction
+            </h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700"
+                  >To Address</label
+                >
+                <input
+                  type="text"
+                  id="toAddress"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Amount</label
+                >
+                <input
+                  type="number"
+                  id="amount"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                onclick="sendTransaction()"
+                class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Send Transaction
+              </button>
+            </div>
+          </div>
+
+          <!-- Mining Section -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Mining</h2>
+            <div class="space-y-4">
+              <button
+                onclick="mineBlock()"
+                class="w-full bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+              >
+                Mine Block
+              </button>
+              <div id="miningStatus" class="text-sm text-gray-600"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-8">
+          <!-- Network Status -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              Network Status
+            </h2>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-700">Connected Peers:</span>
+                <span id="peerCount" class="font-semibold">0</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-700">Blockchain Height:</span>
+                <span id="blockchainHeight" class="font-semibold">0</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-700">Pending Transactions:</span>
+                <span id="pendingTxCount" class="font-semibold">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pending Transactions -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              Pending Transactions
+            </h2>
+            <div id="pendingTransactions" class="space-y-4">
+              <!-- Transactions will be added here dynamically -->
+            </div>
+          </div>
+
+          <!-- Transaction History -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              Transaction History
+            </h2>
+            <div id="transactionHistory" class="space-y-4">
+              <!-- Transactions will be added here dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notifications -->
+      <div
+        id="toast"
+        class="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-full opacity-0 transition-all duration-300"
+      >
+        <p id="toastMessage"></p>
+      </div>
+    </div>
+  </body>
+</html>

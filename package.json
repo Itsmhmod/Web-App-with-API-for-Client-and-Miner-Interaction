@@ -1,0 +1,21 @@
+{
+  "name": "cryptocurrency-simulator",
+  "version": "1.0.0",
+  "description": "A minimal, functional peer-to-peer cryptocurrency simulator",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "start:second": "set PORT=5000 && set TCP_PORT=5001 && node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
+    "elliptic": "^6.5.4",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
